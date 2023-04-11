@@ -19,11 +19,21 @@ class Menu:
         menu_dish: str,
         menu_dish_price: float,
         menu_dish_kcal: float,
+        menu_dish_qty: int,
     ) -> None:
         self.menu_cat = menu_cat
         self.menu_dish = menu_dish
         self.menu_dish_price = menu_dish_price
         self.menu_dish_kcal = menu_dish_kcal
+        self.menu_dish_qty = menu_dish_qty
+
+
+class Order:
+    def __init__(self, order_dish: str, order_price: float, order_qty: int) -> None:
+        self.order_dish = order_dish
+        self.order_price = order_price
+        self.order_qty = order_qty
+        self.order = []
 
 
 class Reservations:
@@ -36,11 +46,17 @@ class Reservations:
 class Restaurant:
     tables_list = []
     reservation_list = []
+    menu_list = []
 
     @classmethod
     def add_table(cls, table_list: Table) -> None:
         for table in table_list:
             cls.tables_list.append(table)
+
+    @classmethod
+    def add_menu_elements(cls, menu_list: Menu) -> None:
+        for menu_element in menu_list:
+            cls.menu_list.append(menu_element)
 
     def get_table_by_id(self, table_id: int) -> Table:
         for table in self.tables_list:
@@ -51,6 +67,20 @@ class Restaurant:
     @classmethod
     def get_tables_list(cls):
         return cls.tables_list
+
+    def get_menu_categories(self) -> List:
+        categories_list = []
+        for cat in self.menu_list:
+            if cat.menu_cat not in categories_list:
+                categories_list.append(cat.menu_cat)
+        return categories_list
+
+    def get_menu_elements_by_category(self, needed_cat: str) -> List:
+        category_elements = []
+        for menu_element in self.menu_list:
+            if menu_element.menu_cat == needed_cat:
+                category_elements.append(menu_element)
+        return category_elements
 
     def set_reservation(
         self, reserved_by: str, table_id: int, reserved_time: str
@@ -69,7 +99,6 @@ class Restaurant:
         return True
 
     @classmethod
-    # metodas grazina visas rezervacijas skirtas siam tablui
     def get_reservation_info(cls, table_obj: Table) -> Reservations:
         for reserv in cls.reservation_list:
             if reserv.table == table_obj:
@@ -100,6 +129,15 @@ if __name__ == "__main__":
             Table("Double", table_id=6, table_seats=5),
         ]
     )
+    Restaurant.add_menu_elements(
+        [
+            Menu("Soups", "Agurkine", 1.99, 120, 10),
+            Menu("Soups", "Kopustiene", 1.49, 900, 10),
+            Menu("Karsti", "Kepsnys", 6.49, 1500, 10),
+            Menu("Karsti", "Grilis", 6.49, 1500, 10),
+            Menu("Uzkandziai", "Kepta duona", 6.49, 1500, 10),
+        ]
+    )
 
     print("Welcome to our Cafeteria!")
     name = input("Please enter your name: ")
@@ -110,6 +148,7 @@ if __name__ == "__main__":
         print("2. Reserve a table")
         print("3. View table status")
         print("4. Quit")
+        print("5. Arived on time")
 
         choice = int(input("Enter your choice (1-4): "))
         restaurant = Restaurant()
@@ -146,3 +185,16 @@ if __name__ == "__main__":
 
         elif choice == 4:
             break
+
+        elif choice == 5:
+            print("Select your food categorie: ")
+
+            categories = restaurant.get_menu_categories()
+            for categorie in categories:
+                print(categorie)
+
+            selected_menu = input("Selected category: ")
+            select = restaurant.get_menu_elements_by_category(needed_cat=selected_menu)
+            for dish in select:
+                print(dish.menu_dish)
+            selected_dish = input("Selected dish: ")
