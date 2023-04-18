@@ -29,11 +29,13 @@ class Menu:
 
 
 class Order:
-    def __init__(self, order_dish: str, order_price: float, order_qty: int) -> None:
+    def __init__(
+        self, order_dish: str, order_price: float, order_qty: int, order_table: int
+    ) -> None:
         self.order_dish = order_dish
         self.order_price = order_price
         self.order_qty = order_qty
-        self.order = []
+        self.order_table = order_table
 
 
 class Reservations:
@@ -47,16 +49,29 @@ class Restaurant:
     tables_list = []
     reservation_list = []
     menu_list = []
+    order_list = []
 
-    @classmethod
-    def add_table(cls, table_list: Table) -> None:
+    def add_table(self, table_list: Table) -> None:
         for table in table_list:
-            cls.tables_list.append(table)
+            self.tables_list.append(table)
 
-    @classmethod
-    def add_menu_elements(cls, menu_list: Menu) -> None:
+    def add_menu_elements(self, menu_list: Menu) -> None:
         for menu_element in menu_list:
-            cls.menu_list.append(menu_element)
+            self.menu_list.append(menu_element)
+
+    def add_to_order(self, selected_name: str, selected_qty: float, table: int) -> None:
+        for menu_element in self.menu_list:
+            if selected_name == menu_element.menu_dish:
+                self.order_list.append(
+                    Order(
+                        selected_name, menu_element.menu_dish_price, selected_qty, table
+                    )
+                )
+
+    def get_order_kcal(self, dish_name: str):
+        for dish_element in self.menu_list:
+            if dish_element.menu_dish == dish_name:
+                return dish_element.menu_dish_kcal
 
     def get_table_by_id(self, table_id: int) -> Table:
         for table in self.tables_list:
@@ -64,9 +79,11 @@ class Restaurant:
                 return table
         return None
 
-    @classmethod
-    def get_tables_list(cls):
-        return cls.tables_list
+    def get_menu_list(self):
+        return self.menu_list
+
+    def get_tables_list(self):
+        return self.tables_list
 
     def get_menu_categories(self) -> List:
         categories_list = []
@@ -98,19 +115,17 @@ class Restaurant:
         )
         return True
 
-    @classmethod
-    def get_reservation_info(cls, table_obj: Table) -> Reservations:
-        for reserv in cls.reservation_list:
+    def get_reservation_info(self, table_obj: Table) -> Reservations:
+        for reserv in self.reservation_list:
             if reserv.table == table_obj:
                 return reserv
         return None
 
-    @classmethod
-    def get_free_tables_by_seats(cls, needed_seats: int):
+    def get_free_tables_by_seats(self, needed_seats: int):
         free_tables = []
-        for table in cls.tables_list:
+        for table in self.tables_list:
             if table.table_seats >= needed_seats:
-                if cls.get_reservation_info(table) is None:
+                if self.get_reservation_info(table) is None:
                     free_tables.append(table)
         return free_tables
 
@@ -119,7 +134,8 @@ class Restaurant:
 
 
 if __name__ == "__main__":
-    Restaurant.add_table(
+    restaurant = Restaurant()
+    restaurant.add_table(
         [
             Table("Single", table_id=1, table_seats=1),
             Table("Single", table_id=2, table_seats=2),
@@ -129,7 +145,7 @@ if __name__ == "__main__":
             Table("Double", table_id=6, table_seats=5),
         ]
     )
-    Restaurant.add_menu_elements(
+    restaurant.add_menu_elements(
         [
             Menu("Soups", "Agurkine", 1.99, 120, 10),
             Menu("Soups", "Kopustiene", 1.49, 900, 10),
@@ -149,9 +165,9 @@ if __name__ == "__main__":
         print("3. View table status")
         print("4. Quit")
         print("5. Arived on time")
+        print("6. Get order list")
 
         choice = int(input("Enter your choice (1-4): "))
-        restaurant = Restaurant()
         if choice == 1:
             for reservation in restaurant.get_reservations():
                 print("Al reservations list: ")
@@ -172,7 +188,7 @@ if __name__ == "__main__":
                 print("no")
 
         elif choice == 3:
-            for rest_table in Restaurant.get_tables_list():
+            for rest_table in restaurant.get_tables_list():
                 info = restaurant.get_reservation_info(rest_table)
                 if info is None:
                     print(
@@ -198,3 +214,11 @@ if __name__ == "__main__":
             for dish in select:
                 print(dish.menu_dish)
             selected_dish = input("Selected dish: ")
+            selected_dish_qty = input("Select qty: ")
+            restaurant.add_to_order(selected_dish, selected_dish_qty, selected_table)
+
+        elif choice == 6:
+            for order in restaurant.get_order_list():
+                print(
+                    f"Table [{order.order_table}] ordered: {order.order_dish} - {order.order_qty} qty"
+                )
