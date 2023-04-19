@@ -1,50 +1,43 @@
 # pylint: disable= missing-docstring
+from dataclasses import dataclass
 from typing import List
 
 
+@dataclass
 class Table:
-    def __init__(self, table_type: str, table_id: int, table_seats: int) -> None:
-        self.table_type = table_type
-        self.table_id = table_id
-        self.table_seats = table_seats
+    table_type: str
+    table_id: int
+    table_seats: int
 
     def get_table_id(self) -> int:
         return self.table_id
 
 
+@dataclass
 class Menu:
-    def __init__(
-        self,
-        menu_cat: str,
-        menu_dish: str,
-        menu_dish_price: float,
-        menu_dish_kcal: float,
-        menu_dish_qty: int,
-    ) -> None:
-        self.menu_cat = menu_cat
-        self.menu_dish = menu_dish
-        self.menu_dish_price = menu_dish_price
-        self.menu_dish_kcal = menu_dish_kcal
-        self.menu_dish_qty = menu_dish_qty
+    menu_cat: str
+    menu_dish: str
+    menu_dish_price: float
+    menu_dish_kcal: float
+    menu_dish_qty: int
 
 
+@dataclass
 class Order:
-    def __init__(
-        self, order_dish: str, order_price: float, order_qty: int, order_table: int
-    ) -> None:
-        self.order_dish = order_dish
-        self.order_price = order_price
-        self.order_qty = order_qty
-        self.order_table = order_table
+    order_dish: str
+    order_price: float
+    order_qty: int
+    order_table: int
 
 
+@dataclass
 class Reservations:
-    def __init__(self, reserved_by: str, table: Table, reserved_time: str) -> None:
-        self.reserved_by = reserved_by
-        self.table = table
-        self.reserved_time = reserved_time
+    reserved_by: str
+    table: Table
+    reserved_time: str
 
 
+@dataclass
 class Restaurant:
     tables_list = []
     reservation_list = []
@@ -68,10 +61,8 @@ class Restaurant:
                     )
                 )
 
-    def get_order_kcal(self, dish_name: str):
-        for dish_element in self.menu_list:
-            if dish_element.menu_dish == dish_name:
-                return dish_element.menu_dish_kcal
+    def get_order_kcal(self):
+        pass
 
     def get_table_by_id(self, table_id: int) -> Table:
         for table in self.tables_list:
@@ -162,10 +153,10 @@ if __name__ == "__main__":
         print("\nWhat would you like to do?")
         print("1. Check my reservation")
         print("2. Reserve a table")
-        print("3. View table status")
-        print("4. Quit")
-        print("5. Arived on time")
-        print("6. Get order list")
+        print("3. View all table status")
+        print("4. Start order")
+        print("5. Get order list")
+        print("6. Quit")
 
         choice = int(input("Enter your choice (1-4): "))
         if choice == 1:
@@ -200,9 +191,6 @@ if __name__ == "__main__":
                     )
 
         elif choice == 4:
-            break
-
-        elif choice == 5:
             print("Select your food categorie: ")
 
             categories = restaurant.get_menu_categories()
@@ -217,8 +205,10 @@ if __name__ == "__main__":
             selected_dish_qty = input("Select qty: ")
             restaurant.add_to_order(selected_dish, selected_dish_qty, selected_table)
 
-        elif choice == 6:
-            for order in restaurant.get_order_list():
+        elif choice == 5:
+            for order in restaurant.order_list:
                 print(
                     f"Table [{order.order_table}] ordered: {order.order_dish} - {order.order_qty} qty"
                 )
+        elif choice == 6:
+            break
