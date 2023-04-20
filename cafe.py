@@ -194,13 +194,16 @@ if __name__ == "__main__":
             print("Select your food categorie: ")
 
             categories = restaurant.get_menu_categories()
-            for categorie in categories:
-                print(categorie)
+
+            for index, categorie in enumerate(categories, 1):
+                print(f"{index}. {categorie}")
 
             selected_menu = input("Selected category: ")
             select = restaurant.get_menu_elements_by_category(needed_cat=selected_menu)
-            for dish in select:
-                print(dish.menu_dish)
+
+            for index, dish in enumerate(select, 1):
+                print(f"{index}. {dish.menu_dish}")
+
             selected_dish = input("Selected dish: ")
             selected_dish_qty = input("Select qty: ")
             restaurant.add_to_order(selected_dish, selected_dish_qty, selected_table)
