@@ -28,6 +28,7 @@ class Reservations:
         self.table = table
         self.reserved_time = reserved_time
 
+
 class Restaurant:
     def __init__(self) -> None:
         self.tables_list = []
@@ -43,12 +44,14 @@ class Restaurant:
             if table.get_table_id() == table_id:
                 return table
         return None
-    
+
     def get_tables_list(self):
         return self.tables_list
 
-    # setinam rezervacij
-    def set_reservation(self, reserved_by: str, table_id: int, reserved_time: str) -> bool:
+    # setinam rezervacija
+    def set_reservation(
+        self, reserved_by: str, table_id: int, reserved_time: str
+    ) -> bool:
         table_obj = self.get_table_by_id(table_id)
         if table_obj is None:
             return False
@@ -57,8 +60,9 @@ class Restaurant:
             if reservarion.table.get_table_id() == table_id:
                 return False
 
-        self.reservation_list.append(Reservations(
-            reserved_by, table_obj, reserved_time))
+        self.reservation_list.append(
+            Reservations(reserved_by, table_obj, reserved_time)
+        )
         return True
 
     def get_reservations(self) -> List[Reservations]:
@@ -71,17 +75,18 @@ restaurant.add_table(Table("Double", table_id=2, table_seats=2))
 
 # print(restaurant.get_table_by_id(1).get_table_state())
 
-if restaurant.set_reservation('Marius', 1, "18:20"):
+if restaurant.set_reservation("Marius", 1, "18:20"):
     print("ok")
 else:
-    print('no')
-if restaurant.set_reservation('Linas', 1, "18:20"):
+    print("no")
+if restaurant.set_reservation("Linas", 1, "18:20"):
     print("ok")
 else:
-    print('no')
+    print("no")
 
 
 print("Al reservations list: ")
 for reservation in restaurant.get_reservations():
     print(
-        f"Reserved by: {reservation.reserved_by}, time: {reservation.reserved_time}, table id: {reservation.table.get_table_id()}")
+        f"Reserved by: {reservation.reserved_by}, time: {reservation.reserved_time}, table id: {reservation.table.get_table_id()}"
+    )
