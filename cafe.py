@@ -1,52 +1,24 @@
 # pylint: disable= missing-docstring
-from dataclasses import dataclass
 from typing import List
 
+from pymongo import MongoClient
+from pymongo.collection import Collection
+from modules.data import Table, Menu, Order, Reservations
 
-@dataclass
-class Table:
-    table_type: str
-    table_id: int
-    table_seats: int
-
-    def get_table_id(self) -> int:
-        return self.table_id
+client = MongoClient("mongodb://localhost:27017/")
+db = client["caffeteria"]
+# collection = db["your_collection_name"]
 
 
-@dataclass
-class Menu:
-    menu_cat: str
-    menu_dish: str
-    menu_dish_price: float
-    menu_dish_kcal: float
-    menu_dish_qty: int
-
-
-@dataclass
-class Order:
-    order_dish: str
-    order_price: float
-    order_qty: int
-    order_table: int
-
-
-@dataclass
-class Reservations:
-    reserved_by: str
-    table: Table
-    reserved_time: str
-
-
-@dataclass
 class Restaurant:
-    tables_list = []
-    reservation_list = []
+    # tables_list = []
+    # reservation_list = []
     menu_list = []
     order_list = []
 
-    def add_table(self, table_list: Table) -> None:
-        for table in table_list:
-            self.tables_list.append(table)
+    # def add_table(self, table_list: Table) -> None:
+    #     for table in table_list:
+    #         self.tables_list.append(table)
 
     def add_menu_elements(self, menu_list: Menu) -> None:
         for menu_element in menu_list:
@@ -61,20 +33,17 @@ class Restaurant:
                     )
                 )
 
-    def get_order_kcal(self):
-        pass
-
-    def get_table_by_id(self, table_id: int) -> Table:
-        for table in self.tables_list:
-            if table.get_table_id() == table_id:
-                return table
-        return None
+    # def get_table_by_id(self, table_id: int) -> Table:
+    #     for table in self.tables_list:
+    #         if table.get_table_id() == table_id:
+    #             return table
+    #     return None
 
     def get_menu_list(self):
         return self.menu_list
 
-    def get_tables_list(self):
-        return self.tables_list
+    # def get_tables_list(self):
+    #     return self.tables_list
 
     def get_menu_categories(self) -> List:
         categories_list = []
@@ -90,61 +59,44 @@ class Restaurant:
                 category_elements.append(menu_element)
         return category_elements
 
-    def set_reservation(
-        self, reserved_by: str, table_id: int, reserved_time: str
-    ) -> bool:
-        table_object = self.get_table_by_id(table_id)
-        if table_object is None:
-            return False
+    ##############
 
-        for reservarion in self.reservation_list:
-            if reservarion.table.get_table_id() == table_id:
-                return False
+    def filter_free_tables(self, need_seats: int):
+        collection = db["tables"]
+        query = {"reserved_by": "", "table_seats": {"$gte": need_seats}}
+        result = collection.find(query)
+        return list(result)
 
-        self.reservation_list.append(
-            Reservations(reserved_by, table_object, reserved_time)
+    def filter_reservations_by_name(self, name: str):
+        collection = db["reservations"]
+        result = collection.find(
+            {"reserved_by": name}, {"table_id": 1, "reserved_time": 1, "_id": 0}
         )
-        return True
+        return list(result)
 
-    def get_reservation_info(self, table_obj: Table) -> Reservations:
-        for reserv in self.reservation_list:
-            if reserv.table == table_obj:
-                return reserv
-        return None
-
-    def get_free_tables_by_seats(self, needed_seats: int):
-        free_tables = []
-        for table in self.tables_list:
-            if table.table_seats >= needed_seats:
-                if self.get_reservation_info(table) is None:
-                    free_tables.append(table)
-        return free_tables
-
-    def get_reservations(self) -> List[Reservations]:
-        return self.reservation_list
+    def set_reservation(self, reserved_by: str, table_id: int, reserved_time: str):
+        collection = db["reservations"]
+        query = {
+            "table_id": table_id,
+            "reserved_by": reserved_by,
+            "reserved_time": reserved_time,
+        }
+        result = collection.insert_one(query)
+        return result.inserted_id
 
 
 if __name__ == "__main__":
     restaurant = Restaurant()
-    restaurant.add_table(
-        [
-            Table("Single", table_id=1, table_seats=1),
-            Table("Single", table_id=2, table_seats=2),
-            Table("Double", table_id=3, table_seats=2),
-            Table("Double", table_id=4, table_seats=3),
-            Table("Double", table_id=5, table_seats=4),
-            Table("Double", table_id=6, table_seats=5),
-        ]
-    )
-    restaurant.add_menu_elements(
-        [
-            Menu("Soups", "Agurkine", 1.99, 120, 10),
-            Menu("Soups", "Kopustiene", 1.49, 900, 10),
-            Menu("Karsti", "Kepsnys", 6.49, 1500, 10),
-            Menu("Karsti", "Grilis", 6.49, 1500, 10),
-            Menu("Uzkandziai", "Kepta duona", 6.49, 1500, 10),
-        ]
-    )
+
+    # restaurant.add_menu_elements(
+    #     [
+    #         Menu("Soups", "Agurkine", 1.99, 120, 10),
+    #         Menu("Soups", "Kopustiene", 1.49, 900, 10),
+    #         Menu("Karsti", "Kepsnys", 6.49, 1500, 10),
+    #         Menu("Karsti", "Grilis", 6.49, 1500, 10),
+    #         Menu("Uzkandziai", "Kepta duona", 6.49, 1500, 10),
+    #     ]
+    # )
 
     print("Welcome to our Cafeteria!")
     name = input("Please enter your name: ")
@@ -159,35 +111,34 @@ if __name__ == "__main__":
         print("6. Quit")
 
         choice = int(input("Enter your choice (1-4): "))
+
         if choice == 1:
-            for reservation in restaurant.get_reservations():
-                print("Al reservations list: ")
+            my_reservations = restaurant.filter_reservations_by_name(name)
+            for reservation in my_reservations:
                 print(
-                    f"Reserved by: {reservation.reserved_by}, time: {reservation.reserved_time}, table id: {reservation.table.get_table_id()}"
+                    f"Table id: {reservation['table_id']}, time: {reservation['reserved_time']}"
                 )
+
         elif choice == 2:
             seats = int(input("How many people in your group? "))
             time = input("What time would you like to reserve? Enter time in HH:MM ")
-            for free_table in restaurant.get_free_tables_by_seats(needed_seats=seats):
-                print(
-                    f"Type: {free_table.table_type}, id: {free_table.table_id}, seats: {free_table.table_seats}"
-                )
-            selected_table = int(input("Selected table ID: "))
-            if restaurant.set_reservation(name, selected_table, time):
-                print("ok")
-            else:
-                print("no")
+            free_tables = restaurant.filter_free_tables(seats)
+            for table in free_tables:
+                print(f"Table id: {table['table_id']}, seats: {table['table_seats']}")
 
         elif choice == 3:
-            for rest_table in restaurant.get_tables_list():
-                info = restaurant.get_reservation_info(rest_table)
-                if info is None:
+            collection = db["tables"]
+            all_tables = collection.find(
+                {}, {"table_id": 1, "table_seats": 1, "reserved_by": 1}
+            )
+            for table in all_tables:
+                if table["reserved_by"] is not "":
                     print(
-                        f"Type: {rest_table.table_type}, id: {rest_table.table_id}, seats: {rest_table.table_seats}"
+                        f"Table ID: {table['table_id']} with {table['table_seats']} seats. Reserved by: {table['reserved_by']}"
                     )
                 else:
                     print(
-                        f"Type: {rest_table.table_type}, id: {rest_table.table_id}, seats: {rest_table.table_seats}. Reserved by: {info.reserved_by}"
+                        f"Table ID: {table['table_id']} with {table['table_seats']} seats."
                     )
 
         elif choice == 4:
