@@ -2,7 +2,8 @@
 import random
 from typing import Dict, List
 from pymongo.errors import PyMongoError, CollectionInvalid, OperationFailure
-from utils.database import db_session
+from utilities.database import db_session
+from utilities.schemas import reservation_validation, table_validation
 
 
 class Base:
@@ -29,6 +30,8 @@ class Tables:
 
     def create_tables(self, tables_qty: int):
         try:
+            self.database.command("collMod", self.collection.name, **table_validation)
+            print("Schema validation enabled.")
             table_id = 1
             for _ in range(tables_qty):
                 query = {
@@ -38,6 +41,9 @@ class Tables:
                 }
                 self.collection.insert_one(query)
                 table_id = table_id + 1
+
+        except OperationFailure as err:
+            print(f"Failed to enable schema validation: {err.details['errmsg']}")
 
         except PyMongoError as err:
             print("Basic error: ", str(err))
@@ -61,6 +67,10 @@ class Reservation:
 
     def create_reservation(self, client_name: str, seats_qty: int, time: str):
         try:
+            self.database.command(
+                "collMod", self.collection.name, **reservation_validation
+            )
+            print("Schema validation enabled.")
             query = {"table_seats": {"$gte": seats_qty}, "reserved": False}
             table = self.tables_collection.find_one(query)
             reservation_id = self.collection.count_documents({}) + 1
@@ -85,6 +95,9 @@ class Reservation:
             result = self.collection.insert_one(add_reservation)
             self.tables_collection.update_one(query, update_table)
             return str(result.inserted_id)
+
+        except OperationFailure as err:
+            print(f"Failed to enable schema validation: {err.details['errmsg']}")
 
         except PyMongoError as err:
             print("Basic error: ", str(err))
@@ -149,13 +162,3 @@ class Restaurant(Base):
         except PyMongoError as err:
             print("An error occurred:", str(err))
             return False
-
-    # def add_to_order(self, reservation_id: int, food_name: str, qty: int):
-    #     try:
-    #         query =
-
-    #     except CollectionInvalid as err:
-    #         print("Collection creation error:", str(err))
-
-    #     except PyMongoError as err:
-    #         print("An error occurred:", str(err))

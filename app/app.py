@@ -1,8 +1,8 @@
 # pylint: disable= missing-docstring
 from flask import Flask, render_template, redirect, url_for, flash
-import utils.forms as forms
-from utils.database import db_session
-from utils.backend import Reservation
+import utilities.forms as forms
+from utilities.database import db_session
+from backend import Reservation
 
 database = db_session()
 app = Flask(__name__)
@@ -39,6 +39,7 @@ def create_reservation():
     form = forms.NewReservation()
     if form.validate_on_submit():
         reservation = Reservation()
+        reservation.enable_validation_scheme()
         new_reservations = reservation.create_reservation(
             form.firstname.data, form.seats.data, form.time.data
         )
