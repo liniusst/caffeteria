@@ -2,7 +2,7 @@
 import random
 from typing import Dict, List
 from pymongo.errors import PyMongoError, CollectionInvalid, OperationFailure
-from database import db_session
+from utils.database import db_session
 
 
 class Base:

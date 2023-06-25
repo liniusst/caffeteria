@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<p>
+<div style="text-align: center ;">
+    <div class="jumbotron">
+        <h1 class="display-3">Welcome to our Cafeteria!</h1>
+        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus
+            commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+        <a class="btnas btn-outline-info" href="{{ url_for('check_reservation') }}" role="button">Check reservation by
+            name</a>
+        <a class="btnas btn-outline-info" href="{{ url_for('create_reservation') }}" role="button">Make new
+            reservation</a>
+    </div>
+
+</div>
+
+{% endblock %}
